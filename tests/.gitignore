@@ -7,4 +7,6 @@ Makefile
 Makefile.in
 configure.lineno
 get_patches.c
+
 check_*
+!check_*.c
