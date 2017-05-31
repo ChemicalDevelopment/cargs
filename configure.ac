@@ -21,7 +21,7 @@
 
 AC_PREREQ([2.55])
 AC_INIT([cargs], [0.0.1], [group@chemicaldevelopment.us])
-AM_INIT_AUTOMAKE()
+AM_INIT_AUTOMAKE([dist-lzip dist-bzip2 dist-xz dist-zip])
 
 AC_CONFIG_SRCDIR([src/cargs.h])
 AC_CONFIG_HEADERS([config.h])
