@@ -47,6 +47,7 @@ AS_IF([test "x$enable_static" = "xyes"], [
 ])
 
 
+
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC

@@ -23,7 +23,30 @@ can also find a copy at http://www.gnu.org/licenses/.
 
 #include "cargs.h"
 
-void cargs_init() {
+cargs_meta_t cargs_meta;
 
+int cargs_argc;
+char **cargs_argv;
+
+void cargs_init(char *exec_name, char *version, int argc, char **argv) {
+    cargs_argc = argc;
+    cargs_argv = (char **)malloc(sizeof(char *) * argc);
+    size_t i;
+    for (i = 0; i < argc; ++i) {
+        cargs_argv[i] = (char *)malloc(sizeof(char) * strlen(argv[i]));
+        strcpy(cargs_argv[i], argv[i]);
+    }
+
+    cargs_meta.exec_name = (char *)malloc(strlen(exec_name));
+    strcpy(cargs_meta.exec_name, exec_name);
+
+    cargs_meta.version = (char *)malloc(strlen(version));
+    strcpy(cargs_meta.version, version);
+
+    cargs_arr_init(&cargs_meta.authors, 0, sizeof(cargs_author_t));
 }
 
+void cargs_add_author(char *name, char *email) {
+    cargs_arr_resize(&cargs_meta.authors, cargs_meta.authors.len + 1);
+    
+}

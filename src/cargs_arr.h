@@ -1,4 +1,4 @@
-/* cargs.h -- header for cargs library
+/* cargs_arr.h -- header for cargs arrays
 
     Copyright 2016-2017 ChemicalDevelopment
 
@@ -21,49 +21,27 @@ can also find a copy at http://www.gnu.org/licenses/.
 
 
 
-#ifndef __CARGS_H__
-#define __CARGS_H__
+#ifndef __CARGS_ARR_H__
+#define __CARGS_ARR_H__
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#include "cargs.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
-#include <stdbool.h>
-#include <string.h>
+typedef struct cargs_arr_t {
+    size_t len;
+    size_t sizeeach;
+    void * data;
+} cargs_arr_t;
 
-#include "cargs_arr.h"
+void cargs_arr_init(cargs_arr_t *arr, size_t len, size_t sizeeach);
 
-#define CARGS_FAIL exit(33);
+void cargs_arr_free(cargs_arr_t *arr);
 
+void cargs_arr_resize(cargs_arr_t *arr, size_t len);
 
-typedef struct cargs_author_t {
-    char * name;
-    char * email;
+void * cargs_arr_get(cargs_arr_t *arr, size_t i);
 
-} cargs_author_t;
+void cargs_arr_set(cargs_arr_t *arr, size_t i, void * x);
 
-
-typedef struct cargs_meta_t {
-    char * exec_name;
-    char * version;
-
-    cargs_arr_t authors;
-
-} cargs_meta_t;
-
-
-int cargs_argc;
-char **cargs_argv;
-
-cargs_meta_t cargs_meta;
-
-
-void cargs_init(char *exec_name, char *version, int argc, char **argv);
-
-void cargs_add_author(char *name, char *email);
 
 
 #endif

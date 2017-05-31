@@ -18,9 +18,13 @@
 #  can also find a copy at http://www.gnu.org/licenses/.
 ###  
 
-TESTS = check_init
-check_PROGRAMS = check_init
+TESTS = check_init check_arr
+check_PROGRAMS = check_init check_arr
+
 check_init_SOURCES = $(top_builddir)/src/cargs.h check_init.c 
 check_init_CFLAGS = -I$(top_builddir)/src
 check_init_LDADD = $(top_builddir)/src/libcargs.a
 
+check_arr_SOURCES = $(top_builddir)/src/cargs.h check_arr.c 
+check_arr_CFLAGS = -I$(top_builddir)/src
+check_arr_LDADD = $(top_builddir)/src/libcargs.a

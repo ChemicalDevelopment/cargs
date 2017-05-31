@@ -20,9 +20,10 @@ can also find a copy at http://www.gnu.org/licenses/.
 */
 
 #include "cargs.h"
+#include <assert.h>
 
 int main(int argc, char *argv[])
 {
-    cargs_init();
+    cargs_init(PACKAGE " check_init", VERSION, argc, argv);
 }
 
