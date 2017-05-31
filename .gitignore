@@ -33,7 +33,7 @@ test-driver
 *.a
 *.log
 *.trs
-
+*.zip
 autom4te.cache
 autoscan.log
 autoscan-*.log
