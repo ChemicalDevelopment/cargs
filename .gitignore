@@ -1,4 +1,4 @@
-src/stemprime
+
 
 *.o
 .vscode/
@@ -30,6 +30,9 @@ test-driver
 
 *.tar
 *.tar.*
+*.a
+*.log
+*.trs
 
 autom4te.cache
 autoscan.log
