@@ -25,5 +25,7 @@ can also find a copy at http://www.gnu.org/licenses/.
 int main(int argc, char *argv[])
 {
     cargs_init(PACKAGE " check_init", VERSION, argc, argv);
+
+    return 0;
 }
 
