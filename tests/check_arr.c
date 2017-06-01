@@ -64,11 +64,126 @@ void arr_test_rep(size_t sz) {
     free(darr);
 }
 
+void arr_test_int_simple() {
+    size_t sz = 3;
+
+    int ca0 = 15, ca1 = 123, ca2 = 3;
+
+    int * darr = (int *)malloc(sizeof(int) * sz);
+    cargs_arr_t ca;
+    cargs_arr_init_int(&ca, sz);
+
+    
+    cargs_arr_set_int(&ca, 0, ca0);
+    cargs_arr_set_int(&ca, 1, ca1);
+    cargs_arr_set_int(&ca, 2, ca2);
+
+    darr[0] = ca0;
+    darr[1] = ca1;
+    darr[2] = ca2;
+
+    assert(darr[0] == cargs_arr_get_int(&ca, 0));
+    assert(darr[1] == cargs_arr_get_int(&ca, 1));
+    assert(darr[2] == cargs_arr_get_int(&ca, 2));
+
+    cargs_arr_free(&ca);
+    free(darr);
+}
+
+void arr_test_int_rep(size_t sz) {
+
+    int * darr = (int *)malloc(sizeof(int) * sz);
+    cargs_arr_t ca;
+    cargs_arr_init_int(&ca, sz);
+
+    size_t i;
+    for (i = 0; i < sz; ++i) {
+        darr[i] = (i*i + 5*i + 100) / (i + 1);
+    }
+    for (i = 0; i < sz; ++i) {
+        cargs_arr_set(&ca, i, &darr[i]);
+    }
+    for (i = 0; i < sz; ++i) {
+        assert((*(CARGS_CA_TYPE *)cargs_arr_get(&ca, i)) == darr[i]);
+    }
+
+    cargs_arr_free(&ca);
+    free(darr);
+}
+
+void arr_test_str_simple() {
+    size_t sz = 3;
+
+    char *ca0 = "cade", *ca1 = "is", *ca2 = "great";
+
+    char *da0 = "cade", *da1 = "is", *da2 = "great";
+
+    char ** darr = (char **)malloc(sizeof(char *) * sz);
+    cargs_arr_t ca;
+    cargs_arr_init_int(&ca, sz);
+
+    cargs_arr_set_str(&ca, 0, ca0);
+    cargs_arr_set_str(&ca, 1, ca1);
+    cargs_arr_set_str(&ca, 2, ca2);
+
+    darr[0] = da0;
+    darr[1] = da1;
+    darr[2] = da2;
+
+    assert(strcmp(darr[0], cargs_arr_get_str(&ca, 0)) == 0);
+    assert(strcmp(darr[1], cargs_arr_get_str(&ca, 1)) == 0);
+    assert(strcmp(darr[2], cargs_arr_get_str(&ca, 2)) == 0);
+
+    cargs_arr_free(&ca);
+    free(darr);
+}
+
+void arr_test_str_rep(size_t sz) {
+    char ** darr = (char **)malloc(sizeof(char *) * sz);
+    cargs_arr_t ca;
+    cargs_arr_init_int(&ca, sz);
+
+
+    size_t i;
+    for (i = 0; i < sz; ++i) {
+        char * ctmp0 = (char *)malloc(100);
+        char * ctmp1 = (char *)malloc(100);
+        sprintf(ctmp0, "%zu;%lf", i, ((double)i/2.0)*i + 3.141);
+        sprintf(ctmp1, "%zu;%lf", i, ((double)i/2.0)*i + 3.141);
+        cargs_arr_set_str(&ca, i, ctmp0);
+        darr[i] = ctmp1;
+    }
+
+    for (i = 0; i < sz; ++i) {
+        assert(strcmp(darr[i], cargs_arr_get_str(&ca, i)) == 0);
+    }
+
+    cargs_arr_free_str(&ca);
+    free(darr);
+}
+
+
 int main(int argc, char *argv[])
 {
-    cargs_init(PACKAGE " check_arr", VERSION, argc, argv);
+    cargs_init(PACKAGE ".check_arr", VERSION, argc, argv);
+
+    cargs_print_info();
+
+    arr_test_int_simple();
+
+    arr_test_int_rep(0);
+    arr_test_int_rep(1);
+    arr_test_int_rep(100);
+    arr_test_int_rep(100000);
+
+
+    arr_test_str_simple();
+
+   // arr_test_str_rep(0);
+
 
     arr_test_simple();
+
     arr_test_rep(0);
     arr_test_rep(1);
     arr_test_rep(100);

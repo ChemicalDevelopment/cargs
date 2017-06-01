@@ -25,7 +25,7 @@ can also find a copy at http://www.gnu.org/licenses/.
 void cargs_arr_init(cargs_arr_t *arr, size_t len, size_t sizeeach) {
     (*arr).len = len;
     (*arr).sizeeach = sizeeach;
-    cargs_arr_resize(arr, len);
+    (*arr).data = (void *)malloc(len * sizeeach);
 }
 
 void cargs_arr_free(cargs_arr_t *arr) {
@@ -37,12 +37,12 @@ void cargs_arr_free(cargs_arr_t *arr) {
 
 void cargs_arr_resize(cargs_arr_t *arr, size_t len) {
     (*arr).len = len;
-    (*arr).data = (void *)malloc(len * (*arr).sizeeach);
+    (*arr).data = (void *)realloc((*arr).data, len * (*arr).sizeeach);
 }
 
 void * cargs_arr_get(cargs_arr_t *arr, size_t i) {
     if (i >= (*arr).len) {
-        printf(PACKAGE ": error in cargs_arr_get, index >= len");
+        printf(PACKAGE ": error in cargs_arr_get, index >= len\n");
         CARGS_FAIL
     }
     return (void *)((char *)(*arr).data + i * (*arr).sizeeach);
@@ -50,13 +50,84 @@ void * cargs_arr_get(cargs_arr_t *arr, size_t i) {
 
 void cargs_arr_set(cargs_arr_t *arr, size_t i, void * x) {
     if (i >= (*arr).len) {
-        printf(PACKAGE ": error in cargs_arr_set, index >= len");
+        printf(PACKAGE ": error in cargs_arr_set, index >= len\n");
         CARGS_FAIL
     }
     size_t j;
     for (j = 0; j < (*arr).sizeeach; ++j) {
         ((char *)(*arr).data)[(*arr).sizeeach * i + j] = ((char *)x)[j];
     }
+}
+
+void cargs_arr_append(cargs_arr_t *arr, void * x) {
+    cargs_arr_resize(arr, (*arr).len + 1);
+    cargs_arr_set(arr, (*arr).len - 1, x);
+}
+
+
+
+// int specific methods
+
+void cargs_arr_init_int(cargs_arr_t *arr, size_t len) {
+    cargs_arr_init(arr, len, sizeof(int));
+}
+
+int cargs_arr_get_int(cargs_arr_t *arr, size_t i) {
+    return *(int *)cargs_arr_get(arr, i);
+}
+
+void cargs_arr_set_int(cargs_arr_t *arr, size_t i, int x) {
+    int * toint = (int *)malloc(sizeof(int));
+    (*toint) = x;
+    cargs_arr_set(arr, i, toint);
+}
+
+void cargs_arr_append_int(cargs_arr_t *arr, int x) {
+    int * toint = (int *)malloc(sizeof(int));
+    (*toint) = x;
+    cargs_arr_append(arr, toint);
+}
+
+
+
+// string method
+
+void cargs_arr_init_str(cargs_arr_t *arr, size_t len) {
+    cargs_arr_init(arr, len, sizeof(char *));
+    (*arr).len = len;
+    (*arr).sizeeach = sizeof(char *);
+    (*arr).data = (void *)(char **)malloc(len * sizeof(char *));
+}
+
+void cargs_arr_free_str(cargs_arr_t *arr) {
+    size_t i;
+    for (i = 0; i < (*arr).len; ++i) {
+        free(cargs_arr_get_str(arr, i));
+    }
+
+    (*arr).len = 0;
+    (*arr).sizeeach = 0;
+
+    free((*arr).data);
+    (*arr).data = NULL;
+}
+
+void cargs_arr_set_str(cargs_arr_t *arr, size_t i, char *x) {
+    if (i >= (*arr).len) {
+        printf(PACKAGE ": error in cargs_arr_set_str, index >= len\n");
+        CARGS_FAIL
+    }
+    ((char **)(*arr).data)[i] = x;
+}
+
+char * cargs_arr_get_str(cargs_arr_t *arr, size_t i) {
+    return ((char **)(*arr).data)[i];
+}
+
+
+void cargs_arr_append_str(cargs_arr_t *arr, char *x) {
+    cargs_arr_resize(arr, (*arr).len + 1);
+    cargs_arr_set_str(arr, (*arr).len - 1, x);
 }
 
 

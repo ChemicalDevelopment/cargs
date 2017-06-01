@@ -40,7 +40,36 @@ void cargs_arr_resize(cargs_arr_t *arr, size_t len);
 
 void * cargs_arr_get(cargs_arr_t *arr, size_t i);
 
-void cargs_arr_set(cargs_arr_t *arr, size_t i, void * x);
+void cargs_arr_set(cargs_arr_t *arr, size_t i, void *x);
+
+void cargs_arr_append(cargs_arr_t *arr, void *x);
+
+
+
+// int specific methods
+
+void cargs_arr_init_int(cargs_arr_t *arr, size_t len);
+
+int cargs_arr_get_int(cargs_arr_t *arr, size_t i);
+
+void cargs_arr_set_int(cargs_arr_t *arr, size_t i, int x);
+
+void cargs_arr_append_int(cargs_arr_t *arr, int x);
+
+
+// string specific methods
+
+void cargs_arr_init_str(cargs_arr_t *arr, size_t len);
+
+void cargs_arr_free_str(cargs_arr_t *arr);
+
+char * cargs_arr_get_str(cargs_arr_t *arr, size_t i);
+
+void cargs_arr_set_str(cargs_arr_t *arr, size_t i, char *x);
+
+void cargs_arr_append_str(cargs_arr_t *arr, char *x);
+
+
 
 
 

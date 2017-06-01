@@ -46,7 +46,7 @@ AS_IF([test "x$enable_static" = "xyes"], [
 ], [
 ])
 
-
+AC_DEFINE(CARGS_DEFAULT_HELPSTR_OFFSET, 40, [Default offset while printing usage information])
 
 # Checks for library functions.
 AC_FUNC_MALLOC
