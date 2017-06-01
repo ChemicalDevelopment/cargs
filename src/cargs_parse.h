@@ -50,7 +50,7 @@ can also find a copy at http://www.gnu.org/licenses/.
 // flag type. This is for 0 argument 
 #define CARGS_ARG_TYPE_FLAG            (0x0203)
 
-#define STR_STARTS(a, b) ()
+#define CARGS_ARG_HAS_SPEC(x) (strcmp(cargs_arr_get_str(&(x).keys.pkeys, 0), "") != 0)
 
 
 // tells how to count

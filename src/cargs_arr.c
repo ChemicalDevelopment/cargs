@@ -35,9 +35,32 @@ void cargs_arr_free(cargs_arr_t *arr) {
     (*arr).data = NULL;
 }
 
+
+/*
+
+TODO:
+
+
+Check realloc v malloc
+
+
+*/
+
 void cargs_arr_resize(cargs_arr_t *arr, size_t len) {
     (*arr).len = len;
-    (*arr).data = (void *)realloc((*arr).data, len * (*arr).sizeeach);
+    char * tmpdata = (*arr).data;
+    (*arr).data = (void *)realloc(NULL, len * (*arr).sizeeach);
+    size_t i;
+    for (i = 0; i < strlen(tmpdata); ++i) {
+        ((char *)(*arr).data)[i] = tmpdata[i];
+    }
+    
+}
+
+void cargs_arr_ensure_len(cargs_arr_t *arr, size_t len) {
+    if ((*arr).len < len) {
+        cargs_arr_resize(arr, len);
+    }
 }
 
 void * cargs_arr_get(cargs_arr_t *arr, size_t i) {
@@ -93,10 +116,11 @@ void cargs_arr_append_int(cargs_arr_t *arr, int x) {
 // string method
 
 void cargs_arr_init_str(cargs_arr_t *arr, size_t len) {
-    cargs_arr_init(arr, len, sizeof(char *));
     (*arr).len = len;
     (*arr).sizeeach = sizeof(char *);
     (*arr).data = (void *)(char **)malloc(len * sizeof(char *));
+
+
 }
 
 void cargs_arr_free_str(cargs_arr_t *arr) {
@@ -114,6 +138,7 @@ void cargs_arr_free_str(cargs_arr_t *arr) {
 
 void cargs_arr_set_str(cargs_arr_t *arr, size_t i, char *x) {
     if (i >= (*arr).len) {
+
         printf(PACKAGE ": error in cargs_arr_set_str, index >= len\n");
         CARGS_FAIL
     }

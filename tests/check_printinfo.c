@@ -30,7 +30,8 @@ int main(int argc, char **argv)
     cargs_add_author("Cade Brown", "brownce@ornl.gov");
 
 
-    cargs_add_arg("-s", "--sum", 3, CARGS_ARG_TYPE_INT, "to sum");
+    cargs_add_arg("-s", "--sum", 10, CARGS_ARG_TYPE_INT, "to sum");
+    cargs_add_arg("", "", CARGS_NUM_ANY, CARGS_ARG_TYPE_INT, "to prod");
 
 
     cargs_parse();

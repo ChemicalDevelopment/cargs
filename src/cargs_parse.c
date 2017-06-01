@@ -32,16 +32,20 @@ bool cargs_str_starts_with(char *str, char *pre) {
 
 cargs_sarg_t * cargs_get_which_arg(char * cmd) {
     size_t i, j;
+    cargs_sarg_t *fallback_dft = NULL;
     for (i = 0; i < cargs_arg.len; ++i) {
         cargs_sarg_t *csarg = (cargs_sarg_t *)cargs_arr_get(&cargs_arg, i);
         for (j = 0; j < (*csarg).keys.pkeys.len; ++j) {
             char * cmt = cargs_arr_get_str(&(*csarg).keys.pkeys, j);
+            if (strcmp(cmt, "") == 0) {
+                fallback_dft = csarg;
+            }
             if ((strcmp(cmd, cmt) == 0) || (CSTR_ST(cmd, cmt) && strlen(cmd) > strlen(cmt) && cmd[strlen(cmt)] == '=')) {
                 return csarg;
             }
         }
     }
-    return NULL;
+    return fallback_dft;
 }
 
 
@@ -147,6 +151,7 @@ void cargs_add_default(char *pkey, char *dft, size_t idx) {
     cargs_arr_set_str(&(*csarg).vals.pvals, idx, dft);
 }
 
+
 void cargs_parse() {
     size_t i, j;
     char * cstr;
@@ -156,60 +161,98 @@ void cargs_parse() {
         cstr = cargs_argv[i];
 
         csarg = cargs_get_which_arg(cstr);
+        
         if (csarg == NULL) {
             printf("Unknown argument: '%s'\n", cstr);
             CARGS_FAIL
         }
+
         if ((*csarg).keys.is_found) {
             printf("Argument '%s' already specified\n", cstr);
             CARGS_FAIL
         }
+
         (*csarg).keys.is_found = true;
         
-        i++;
+        if (CARGS_ARG_HAS_SPEC(*csarg)) {
+            if (strchr(cstr, '=') != NULL) {
+                char * argpos = strchr(cstr, '=') + 1;
+                char * carg_e;
+                size_t k;
+                for (j = 0; j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY; ++j) {
+                    if (strlen(argpos) < 1) {
+                        printf("Expecting more arguments at the end\n");
+                        CARGS_FAIL
+                    }
+                    carg_e = (char *)malloc(strlen(argpos) + 1);
+                    
+                    for (k = 0; k < strlen(argpos) && argpos[k] != ','; ++k) {
+                        carg_e[k] = argpos[k];
+                    }
+                    carg_e[k] = 0;
+                    argpos = argpos + k + 1;
+                    if (!cargs_str_is_type(carg_e, (*csarg).vals.type)) {
+                        printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", carg_e, cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(carg_e));
+                        CARGS_FAIL
+                    }
 
-        if (strchr(cstr, '=') != NULL) {
-            char * argpos = strchr(cstr, '=') + 1;
-            char * carg_e = (char *)malloc(strlen(cstr));
-            size_t k;
-            for (j = 0; j < (*csarg).count.max; ++j) {
-                if (strlen(argpos) < 1) {
-                    printf("Expecting more arguments at the end\n");
+                    cargs_arr_set_str(&(*csarg).vals.pvals, j, carg_e);
+                }
+                if (strlen(argpos) >= 1) {
+                    printf("Unused arguments: '%s'\n", argpos);
                     CARGS_FAIL
                 }
-                //puts(argpos);
-                for (k = 0; k < strlen(argpos) && argpos[k] != ','; ++k) {
-                    carg_e[k] = argpos[k];
+                i++;
+            } else {
+                for (j = 0; j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY; ++j) {
+                    if (i >= cargs_argc) {
+                        printf("Expecting more arguments for '%s'\n", cstr);
+                        CARGS_FAIL
+                    }
+                    if (!cargs_str_is_type(cargs_argv[i], (*csarg).vals.type)) {
+                        printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", cargs_argv[i], cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(cargs_argv[i]));
+                        CARGS_FAIL
+                    }
+                    cargs_arr_set_str(&(*csarg).vals.pvals, j, cargs_argv[i]);
+                    i++;
                 }
-                carg_e[k] = 0;
-                argpos = argpos + k + 1;
-                if (!cargs_str_is_type(carg_e, (*csarg).vals.type)) {
-                    printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", carg_e, cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(carg_e));
-                    CARGS_FAIL
-                }
-
-                cargs_arr_set_str(&(*csarg).vals.pvals, j, carg_e);
-            }
-            if (strlen(argpos) >= 1) {
-                printf("Unused arguments: '%s'\n", argpos);
-                CARGS_FAIL
             }
         } else {
-            for (j = 0; j < (*csarg).count.max; ++j) {
+            for (j = 0; i < cargs_argc && (j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY); ++j) {
+
                 if (i >= cargs_argc) {
-                    printf("Expecting more arguments for '%s'\n", cstr);
-                    CARGS_FAIL
+                    if ((*csarg).count.max != CARGS_NUM_ANY) {
+                        printf("Expecting more arguments after '%s'\n", cstr);
+                        CARGS_FAIL
+                    }
                 }
-                if (!cargs_str_is_type(cargs_argv[i], (*csarg).vals.type)) {
+
+
+                if (!(csarg == cargs_get_which_arg(cargs_argv[i]))) {
+                    break;
+                }
+
+
+                /*if (!cargs_str_is_type(cargs_argv[i], (*csarg).vals.type)) {
                     printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", cargs_argv[i], cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(cargs_argv[i]));
                     CARGS_FAIL
-                }
+                }*/
+                printf("%d\n", j);
+                cargs_arr_ensure_len(&(*csarg).vals.pvals, j+1);
                 cargs_arr_set_str(&(*csarg).vals.pvals, j, cargs_argv[i]);
+
                 i++;
             }
+            if (i < cargs_argc && (!CARGS_ARG_HAS_SPEC(*cargs_get_which_arg(cargs_argv[i])))) {
+                printf("Extra argument '%s'\n", cargs_argv[i]);
+                CARGS_FAIL
+            }
         }
+        i++;
     }
 
+
+        
     // run some cargs options handling (like -h, -i, etc)
 
     cargs_handle_parse();

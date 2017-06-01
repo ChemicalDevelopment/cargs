@@ -38,6 +38,8 @@ void cargs_arr_free(cargs_arr_t *arr);
 
 void cargs_arr_resize(cargs_arr_t *arr, size_t len);
 
+void cargs_arr_ensure_len(cargs_arr_t *arr, size_t len);
+
 void * cargs_arr_get(cargs_arr_t *arr, size_t i);
 
 void cargs_arr_set(cargs_arr_t *arr, size_t i, void *x);

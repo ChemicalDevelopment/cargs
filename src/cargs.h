@@ -38,7 +38,7 @@ can also find a copy at http://www.gnu.org/licenses/.
 #include "cargs_parse.h"
 
 #define CARGS_FAIL exit(33);
-
+#define CARGS_NUM_ANY (-1)
 
 // author info
 

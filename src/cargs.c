@@ -129,16 +129,22 @@ void cargs_print_usage() {
                 t_len += 2;
             }
         }
-        if (csarg.vals.pvals.len != 0) {
-            printf("=");    
-            t_len++;
-                
-            for (j = 0; j < csarg.vals.pvals.len; ++j) {
-                printf("%c", cargs_get_placeholder_type(csarg.vals.type));
+        if (csarg.vals.pvals.len != 0 || csarg.count.max == CARGS_NUM_ANY) {
+            if (CARGS_ARG_HAS_SPEC(csarg)) {
+                printf("=");
                 t_len++;
-                if (j != csarg.vals.pvals.len - 1) {
-                    printf(",");
+            }
+            if (csarg.count.max == CARGS_NUM_ANY) {
+                printf("%c...", cargs_get_placeholder_type(csarg.vals.type));
+                t_len+=4;
+            } else {
+                for (j = 0; j < csarg.vals.pvals.len; ++j) {
+                    printf("%c", cargs_get_placeholder_type(csarg.vals.type));
                     t_len++;
+                    if (j != csarg.vals.pvals.len - 1) {
+                        printf(",");
+                        t_len++;
+                    }
                 }
             }
         }
@@ -147,6 +153,7 @@ void cargs_print_usage() {
                 printf(" ");
             }
             printf("%s", csarg.helpstr);
+            
         }
         printf("\n");
     }
@@ -252,9 +259,14 @@ void cargs_add_arg(char *pkey0, char *pkey1, int num, unsigned int type, char * 
         cargs_arr_init_str(&(*csarg).keys.pkeys, 1);
         cargs_arr_set_str(&(*csarg).keys.pkeys, 0, pkey0);
     }
+    
 
     (*csarg).vals.type = type;
-    cargs_arr_init(&(*csarg).vals.pvals, num, cargs_get_size_type(type));
+    if (num == CARGS_NUM_ANY) {
+        cargs_arr_init(&(*csarg).vals.pvals, 0, cargs_get_size_type(type));
+    } else {
+        cargs_arr_init(&(*csarg).vals.pvals, num, cargs_get_size_type(type));
+    }
 
     cargs_arr_append(&cargs_arg, (void *)csarg);
 }
