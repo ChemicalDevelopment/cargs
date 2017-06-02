@@ -1,4 +1,4 @@
-/* cargs.h -- header for cargs library
+/* cargs.c -- main commandline argument file
 
     Copyright 2016-2017 ChemicalDevelopment
 
@@ -18,7 +18,6 @@ FOR A PARTICULAR PURPOSE. See the GPLv3 or email at
 can also find a copy at http://www.gnu.org/licenses/.
 
 */
-
 
 
 #include "cargs.h"
@@ -55,10 +54,10 @@ void cargs_init(char *pkg_name, char *version, int argc, char **argv) {
     cargs_arr_init(&cargs_arg, 0, sizeof(cargs_sarg_t));
 
 
-    // add carg options
+    cargs_add_flag("--info", "", "show info");
 
     cargs_add_flag("-h", "--help", "show help / usage");
-    cargs_add_flag("-i", "--info", "show info");
+
     cargs_add_flag("--authors", "", "show authors");
 }
 
@@ -78,6 +77,8 @@ void cargs_handle_parse() {
         cargs_print_authors();
         exit(0);
     }
+
+
 }
 
 #define NN(xx) (!(xx == NULL || strcmp(xx, "") == 0))
@@ -184,9 +185,9 @@ char cargs_get_placeholder_type(unsigned int type) {
         return 'S';
     } else if (type == CARGS_ARG_TYPE_CHAR) {
         return 'c';
-    } else if (type == CARGS_ARG_TYPE_INT || type == CARGS_ARG_TYPE_LONG || type == CARGS_ARG_TYPE_LLONG) {
+    } else if (type == CARGS_ARG_TYPE_INT) {
         return 'N';
-    } else if (type == CARGS_ARG_TYPE_FLOAT || type == CARGS_ARG_TYPE_DOUBLE) {
+    } else if (type == CARGS_ARG_TYPE_FLOAT) {
         return 'F';
     } else if (type == CARGS_ARG_TYPE_ERROR) {
         printf("cargs (cargs_get_placeholder_type): type is `error`\n");
@@ -210,14 +211,8 @@ size_t cargs_get_size_type(unsigned int type) {
         return sizeof(char);
     } else if (type == CARGS_ARG_TYPE_INT) {
         return sizeof(int);
-    } else if (type == CARGS_ARG_TYPE_LONG) {
-        return sizeof(long);
-    } else if (type == CARGS_ARG_TYPE_LLONG) {
-        return sizeof(long long);    
     } else if (type == CARGS_ARG_TYPE_FLOAT) {
         return sizeof(float);    
-    } else if (type == CARGS_ARG_TYPE_DOUBLE) {
-        return sizeof(double);    
     } else if (type == CARGS_ARG_TYPE_ERROR) {
         printf("cargs (cargs_get_size_type): type is `error`\n");
         CARGS_FAIL
@@ -237,7 +232,7 @@ void cargs_add_flag(char *pkey0, char *pkey1, char *helpstr) {
     cargs_add_arg(pkey0, pkey1, 0, CARGS_ARG_TYPE_FLAG, helpstr);
 }
 
-void cargs_add_arg_sin_str(char *pkey0, char *pkey1, char *helpstr) {
+void cargs_add_arg_str(char *pkey0, char *pkey1, char *helpstr) {
     cargs_add_arg(pkey0, pkey1, 1, CARGS_ARG_TYPE_STR, helpstr);
 }
 
@@ -248,8 +243,8 @@ void cargs_add_arg(char *pkey0, char *pkey1, int num, unsigned int type, char * 
     (*csarg).count.max = num;
 
     (*csarg).keys.fflag = 0;
+    (*csarg).keys.is_found = false;
     (*csarg).helpstr = helpstr;
-
 
     if (NN(pkey1)) {
         cargs_arr_init_str(&(*csarg).keys.pkeys, 2);
@@ -262,27 +257,116 @@ void cargs_add_arg(char *pkey0, char *pkey1, int num, unsigned int type, char * 
     
 
     (*csarg).vals.type = type;
+
     if (num == CARGS_NUM_ANY) {
-        cargs_arr_init(&(*csarg).vals.pvals, 0, cargs_get_size_type(type));
+        cargs_arr_init_str(&(*csarg).vals.pvals, 0);
     } else {
-        cargs_arr_init(&(*csarg).vals.pvals, num, cargs_get_size_type(type));
+        cargs_arr_init_str(&(*csarg).vals.pvals, num);
     }
 
     cargs_arr_append(&cargs_arg, (void *)csarg);
 }
 
-char * cargs_get_arg_str(char * pkey) {
-    cargs_sarg_t *csarg = cargs_get_which_arg(pkey);
+char * cargs_get(char * pkey) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
     return cargs_arr_get_str(&(*csarg).vals.pvals, 0);
 }
 
-char * cargs_get_arg_str_idx(char * pkey, size_t idx) {
-    cargs_sarg_t *csarg = cargs_get_which_arg(pkey);
+
+char * cargs_get_idx(char * pkey, size_t idx) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_idx: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    if (idx >= (*csarg).vals.pvals.len) {
+        printf("cargs_get_idx: idx >= pvals.len\n");
+        CARGS_FAIL
+    }
     return cargs_arr_get_str(&(*csarg).vals.pvals, idx);
 }
 
+int cargs_get_int(char * pkey) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_int: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    char * resstr = cargs_arr_get_str(&(*csarg).vals.pvals, 0);
+    if (!cargs_str_is_type(resstr, CARGS_ARG_TYPE_INT)) {
+        printf("cargs_get_int: argument is not an integer '%s'\n", resstr);
+        CARGS_FAIL
+    }
+    int resint = strtol(resstr, NULL, 10);
+    return resint;
+}
+
+int cargs_get_int_idx(char * pkey, size_t idx) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_int_idx: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    if (idx >= (*csarg).vals.pvals.len) {
+        printf("cargs_get_int_idx: idx >= pvals.len\n");
+        CARGS_FAIL
+    }
+
+    char * resstr = cargs_arr_get_str(&(*csarg).vals.pvals, idx);
+    if (!cargs_str_is_type(resstr, CARGS_ARG_TYPE_INT)) {
+        printf("cargs_get_int_idx: argument is not an integer '%s'\n", resstr);
+        CARGS_FAIL
+    }
+    int resint = strtol(resstr, NULL, 10);
+    return resint;
+}
+
+float cargs_get_float(char * pkey) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_float: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    char * resstr = cargs_arr_get_str(&(*csarg).vals.pvals, 0);
+    if (!cargs_str_is_type(resstr, CARGS_ARG_TYPE_FLOAT)) {
+        printf("cargs_get_float: argument is not an integer '%s'\n", resstr);
+        CARGS_FAIL
+    }
+    float resfloat = strtof(resstr, NULL);
+    return resfloat;
+}
+
+float cargs_get_float_idx(char * pkey, size_t idx) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_float_idx: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    if (idx >= (*csarg).vals.pvals.len) {
+        printf("cargs_get_float_idx: idx >= pvals.len\n");
+        CARGS_FAIL
+    }
+    char * resstr = cargs_arr_get_str(&(*csarg).vals.pvals, idx);
+    if (!cargs_str_is_type(resstr, CARGS_ARG_TYPE_FLOAT)) {
+        printf("cargs_get_float: argument is not an float '%s'\n", resstr);
+        CARGS_FAIL
+    }
+    float resfloat = strtof(resstr, NULL);
+    return resfloat;
+}
+
+
+
 bool cargs_get_flag(char * pkey) {
-    cargs_sarg_t *csarg = cargs_get_which_arg(pkey);
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_flag: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
     // uncomment this to only work with keys submitted with CARGS_ARG_TYPE_FLAG
     //if ((*csarg).vals.type != CARGS_ARG_TYPE_FLAG) {
     //    printf("cargs_get_flag: argument '%s' is not a flag", pkey);
@@ -290,3 +374,16 @@ bool cargs_get_flag(char * pkey) {
     //}
     return (*csarg).keys.is_found;
 }
+
+size_t cargs_get_len(char * pkey) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_get_len: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    return (*csarg).vals.pvals.len;
+}
+
+
+
+

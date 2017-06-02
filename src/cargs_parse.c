@@ -30,7 +30,7 @@ bool cargs_str_starts_with(char *str, char *pre) {
     return lenstr < lenpre ? false : strncmp(pre, str, lenpre) == 0;
 }
 
-cargs_sarg_t * cargs_get_which_arg(char * cmd) {
+cargs_sarg_t * cargs_get_which_arg(char * cmd, bool fallback) {
     size_t i, j;
     cargs_sarg_t *fallback_dft = NULL;
     for (i = 0; i < cargs_arg.len; ++i) {
@@ -38,8 +38,11 @@ cargs_sarg_t * cargs_get_which_arg(char * cmd) {
         for (j = 0; j < (*csarg).keys.pkeys.len; ++j) {
             char * cmt = cargs_arr_get_str(&(*csarg).keys.pkeys, j);
             if (strcmp(cmt, "") == 0) {
-                fallback_dft = csarg;
+                if (fallback) {
+                    fallback_dft = csarg;
+                }
             }
+            
             if ((strcmp(cmd, cmt) == 0) || (CSTR_ST(cmd, cmt) && strlen(cmd) > strlen(cmt) && cmd[strlen(cmt)] == '=')) {
                 return csarg;
             }
@@ -56,14 +59,8 @@ char * cargs_get_name_type(unsigned int type) {
         return "char";
     } else if (type == CARGS_ARG_TYPE_INT) {
         return "int";
-    } else if (type == CARGS_ARG_TYPE_LONG) {
-        return "long";
-    } else if (type == CARGS_ARG_TYPE_LLONG) {
-        return "long long";   
     } else if (type == CARGS_ARG_TYPE_FLOAT) {
         return "float";  
-    } else if (type == CARGS_ARG_TYPE_DOUBLE) {
-        return "double";   
     } else if (type == CARGS_ARG_TYPE_ERROR) {
         printf("cargs (cargs_get_size_type): type is `error`\n");
         CARGS_FAIL
@@ -86,7 +83,7 @@ bool cargs_str_is_type(char * st, unsigned int type) {
         return true;
     } else if (type == CARGS_ARG_TYPE_CHAR) {
         return strlen(st) == 1;
-    } else if (type == CARGS_ARG_TYPE_INT || type == CARGS_ARG_TYPE_LONG || type == CARGS_ARG_TYPE_LLONG) {
+    } else if (type == CARGS_ARG_TYPE_INT) {
         size_t i;
         for (i = 0; i < strlen(st); ++i) {
             if (!(CARGS_IS_DIGIT(st[i]) || st[i] == '-')) {
@@ -94,7 +91,7 @@ bool cargs_str_is_type(char * st, unsigned int type) {
             }
         }
         return true;
-    } else if (type == CARGS_ARG_TYPE_FLOAT || type == CARGS_ARG_TYPE_DOUBLE) {
+    } else if (type == CARGS_ARG_TYPE_FLOAT) {
         size_t i;
         for (i = 0; i < strlen(st); ++i) {
             if (!(CARGS_IS_DIGIT(st[i]) || st[i] == '-' || st[i] == '.')) {
@@ -142,11 +139,23 @@ char * cargs_detect_type(char * st) {
     }
 }
 
-void cargs_add_default(char *pkey, char *dft, size_t idx) {
-    cargs_sarg_t *csarg = cargs_get_which_arg(pkey);
-    if (idx >= (*csarg).vals.pvals.len) {
-        cargs_arr_resize(&(*csarg).vals.pvals, idx+1);
+void cargs_add_default(char *pkey, char *dft) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_add_default: unknown key '%s'\n", pkey);
+        CARGS_FAIL
     }
+    cargs_arr_ensure_len(&(*csarg).vals.pvals, 1);
+    cargs_arr_set_str(&(*csarg).vals.pvals, 0, dft);
+}
+
+void cargs_add_default_i(char *pkey, char *dft, size_t idx) {
+    cargs_sarg_t *csarg = cargs_get_which_arg(pkey, false);
+    if (csarg == NULL) {
+        printf("cargs_add_default_i: unknown key '%s'\n", pkey);
+        CARGS_FAIL
+    }
+    cargs_arr_ensure_len(&(*csarg).vals.pvals, idx+1);
 
     cargs_arr_set_str(&(*csarg).vals.pvals, idx, dft);
 }
@@ -156,12 +165,12 @@ void cargs_parse() {
     size_t i, j;
     char * cstr;
 
+
     cargs_sarg_t *csarg;
     for (i = 1; i < cargs_argc; ) {
         cstr = cargs_argv[i];
 
-        csarg = cargs_get_which_arg(cstr);
-        
+        csarg = cargs_get_which_arg(cstr, true);
         if (csarg == NULL) {
             printf("Unknown argument: '%s'\n", cstr);
             CARGS_FAIL
@@ -173,7 +182,7 @@ void cargs_parse() {
         }
 
         (*csarg).keys.is_found = true;
-        
+
         if (CARGS_ARG_HAS_SPEC(*csarg)) {
             if (strchr(cstr, '=') != NULL) {
                 char * argpos = strchr(cstr, '=') + 1;
@@ -181,6 +190,9 @@ void cargs_parse() {
                 size_t k;
                 for (j = 0; j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY; ++j) {
                     if (strlen(argpos) < 1) {
+                        if ((*csarg).count.max == CARGS_NUM_ANY) {
+                            break;
+                        }
                         printf("Expecting more arguments at the end\n");
                         CARGS_FAIL
                     }
@@ -190,12 +202,15 @@ void cargs_parse() {
                         carg_e[k] = argpos[k];
                     }
                     carg_e[k] = 0;
-                    argpos = argpos + k + 1;
+                    argpos = argpos + k;
+                    if (argpos[0] == ',') {
+                        argpos++;
+                    }
                     if (!cargs_str_is_type(carg_e, (*csarg).vals.type)) {
                         printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", carg_e, cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(carg_e));
                         CARGS_FAIL
                     }
-
+                    cargs_arr_ensure_len(&(*csarg).vals.pvals, j+1);
                     cargs_arr_set_str(&(*csarg).vals.pvals, j, carg_e);
                 }
                 if (strlen(argpos) >= 1) {
@@ -204,22 +219,30 @@ void cargs_parse() {
                 }
                 i++;
             } else {
-                for (j = 0; j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY; ++j) {
+                i++;
+                for (j = 0; i < cargs_argc && (j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY); ++j) {
+                    if (cargs_get_which_arg(cargs_argv[i], false) != NULL) {
+                        break;
+                    }
                     if (i >= cargs_argc) {
+                        if ((*csarg).count.max == CARGS_NUM_ANY) {
+                            break;
+                        }
                         printf("Expecting more arguments for '%s'\n", cstr);
                         CARGS_FAIL
                     }
+
                     if (!cargs_str_is_type(cargs_argv[i], (*csarg).vals.type)) {
                         printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", cargs_argv[i], cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(cargs_argv[i]));
                         CARGS_FAIL
                     }
+                    cargs_arr_ensure_len(&(*csarg).vals.pvals, j+1);
                     cargs_arr_set_str(&(*csarg).vals.pvals, j, cargs_argv[i]);
                     i++;
                 }
             }
         } else {
             for (j = 0; i < cargs_argc && (j < (*csarg).count.max || (*csarg).count.max == CARGS_NUM_ANY); ++j) {
-
                 if (i >= cargs_argc) {
                     if ((*csarg).count.max != CARGS_NUM_ANY) {
                         printf("Expecting more arguments after '%s'\n", cstr);
@@ -227,35 +250,32 @@ void cargs_parse() {
                     }
                 }
 
-
-                if (!(csarg == cargs_get_which_arg(cargs_argv[i]))) {
+                if (!(csarg == cargs_get_which_arg(cargs_argv[i], true))) {
                     break;
                 }
-
 
                 /*if (!cargs_str_is_type(cargs_argv[i], (*csarg).vals.type)) {
                     printf("Argument '%s' for '%s' is not the correct type (should be '%s', you gave '%s')\n", cargs_argv[i], cstr, cargs_get_name_type((*csarg).vals.type), cargs_detect_type(cargs_argv[i]));
                     CARGS_FAIL
                 }*/
-                printf("%d\n", j);
+                //intf("%d\n", j);
                 cargs_arr_ensure_len(&(*csarg).vals.pvals, j+1);
                 cargs_arr_set_str(&(*csarg).vals.pvals, j, cargs_argv[i]);
 
                 i++;
             }
-            if (i < cargs_argc && (!CARGS_ARG_HAS_SPEC(*cargs_get_which_arg(cargs_argv[i])))) {
+            if (i < cargs_argc && (!CARGS_ARG_HAS_SPEC(*cargs_get_which_arg(cargs_argv[i], true)))) {
                 printf("Extra argument '%s'\n", cargs_argv[i]);
                 CARGS_FAIL
             }
         }
-        i++;
     }
-
 
         
     // run some cargs options handling (like -h, -i, etc)
 
     cargs_handle_parse();
+    
 
 }
 

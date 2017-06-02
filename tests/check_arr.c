@@ -120,7 +120,7 @@ void arr_test_str_simple() {
 
     char ** darr = (char **)malloc(sizeof(char *) * sz);
     cargs_arr_t ca;
-    cargs_arr_init_int(&ca, sz);
+    cargs_arr_init_str(&ca, sz);
 
     cargs_arr_set_str(&ca, 0, ca0);
     cargs_arr_set_str(&ca, 1, ca1);

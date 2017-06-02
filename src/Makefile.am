@@ -22,6 +22,9 @@
 AM_CFLAGS = --pedantic -Wall -std=c99 -O2
 AM_LDFLAGS =
 
-noinst_LIBRARIES = libcargs.a
+include_HEADERS = cargs.h cargs_arr.h cargs_parse.h
+
+lib_LIBRARIES = libcargs.a
 libcargs_a_SOURCES = cargs.h cargs_arr.h cargs_parse.h cargs.c cargs_arr.c cargs_parse.c
+
 

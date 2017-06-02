@@ -27,11 +27,10 @@ can also find a copy at http://www.gnu.org/licenses/.
 #define CARGS_ARG_TYPE_CHAR            (0x0102)
 #define CARGS_ARG_TYPE_INT             (0x0103)
 
-#define CARGS_ARG_TYPE_LONG            (0x0104)
-#define CARGS_ARG_TYPE_LLONG           (0x0105)
+#define CARGS_ARG_TYPE_FLOAT           (0x0104)
 
-#define CARGS_ARG_TYPE_FLOAT           (0x0106)
-#define CARGS_ARG_TYPE_DOUBLE          (0x0107)
+#define CARGS_NOSPEC                   ""
+#define CARGS_NOARG                    ""
 
 // other types, and common macros
 
@@ -93,7 +92,7 @@ typedef struct cargs_argv_t {
     // or use CARGS_ARG_TYPE_AUTO
     unsigned int type;
 
-    // array of vals
+    // array of return vals
     cargs_arr_t pvals;
 
 } cargs_argv_t;
@@ -126,11 +125,13 @@ bool cargs_str_starts_with(char *str, char *pre);
 
 bool cargs_str_is_type(char * st, unsigned int type);
 
-cargs_sarg_t * cargs_get_which_arg(char * cmd);
+cargs_sarg_t * cargs_get_which_arg(char * cmd, bool fallback);
 
 char * cargs_detect_type(char * st);
 
-void cargs_add_default(char *pkey, char *dft, size_t idx);
+void cargs_add_default(char *pkey, char *dft);
+
+void cargs_add_default_i(char *pkey, char *dft, size_t idx);
 
 void cargs_parse();
 

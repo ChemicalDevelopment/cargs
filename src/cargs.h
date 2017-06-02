@@ -95,15 +95,25 @@ size_t cargs_get_size_type(unsigned int type);
 
 void cargs_add_flag(char *pkey0, char *pkey1, char *helpstr);
 
-void cargs_add_arg_sin_str(char *pkey0, char *pkey1, char *helpstr);
+void cargs_add_arg_str(char *pkey0, char *pkey1, char *helpstr);
 
 void cargs_add_arg(char *pkey0, char *pkey1, int num, unsigned int type, char * helpstr);
 
 
-char * cargs_get_arg_str_idx(char * pkey, size_t idx);
+char * cargs_get_idx(char * pkey, size_t idx);
 
-char * cargs_get_arg_str(char * pkey);
+char * cargs_get(char * pkey);
+
+int cargs_get_int(char * pkey);
+
+int cargs_get_int_idx(char * pkey, size_t idx);
+
+float cargs_get_float(char * pkey);
+
+float cargs_get_float_idx(char * pkey, size_t idx);
 
 bool cargs_get_flag(char * pkey);
+
+size_t cargs_get_len(char * pkey);
 
 #endif

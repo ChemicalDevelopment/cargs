@@ -48,12 +48,7 @@ Check realloc v malloc
 
 void cargs_arr_resize(cargs_arr_t *arr, size_t len) {
     (*arr).len = len;
-    char * tmpdata = (*arr).data;
-    (*arr).data = (void *)realloc(NULL, len * (*arr).sizeeach);
-    size_t i;
-    for (i = 0; i < strlen(tmpdata); ++i) {
-        ((char *)(*arr).data)[i] = tmpdata[i];
-    }
+    (*arr).data = (void *)realloc((*arr).data, len * (*arr).sizeeach);
     
 }
 
@@ -142,7 +137,10 @@ void cargs_arr_set_str(cargs_arr_t *arr, size_t i, char *x) {
         printf(PACKAGE ": error in cargs_arr_set_str, index >= len\n");
         CARGS_FAIL
     }
-    ((char **)(*arr).data)[i] = x;
+    char *tx = (char *)malloc(strlen(x) + 1);
+    strcpy(tx, x);
+    tx[strlen(x)] = 0;
+    ((char **)(*arr).data)[i] = tx;
 }
 
 char * cargs_arr_get_str(cargs_arr_t *arr, size_t i) {

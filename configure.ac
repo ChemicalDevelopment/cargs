@@ -20,8 +20,9 @@
 
 
 AC_PREREQ([2.55])
-AC_INIT([cargs], [0.0.1], [group@chemicaldevelopment.us])
-AM_INIT_AUTOMAKE([dist-lzip dist-bzip2 dist-xz dist-zip])
+AC_INIT([cargs], [0.1.0], [group@chemicaldevelopment.us])
+AM_INIT_AUTOMAKE([dist-xz dist-zip])
+
 
 AC_CONFIG_SRCDIR([src/cargs.h])
 AC_CONFIG_HEADERS([config.h])
@@ -32,12 +33,11 @@ AC_PROG_RANLIB
 
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdlib.h stdio.h stdbool.h string.h math.h])
+AC_CHECK_HEADERS([stdlib.h stdio.h time.h stdbool.h string.h math.h])
 
 # Checks for libraries.
 
-AC_CHECK_LIB(m, log)
-
+AC_CHECK_LIB(m, sqrt)
 
 AC_ARG_ENABLE([static], AS_HELP_STRING([--enable-static], [Enable static building]))
 

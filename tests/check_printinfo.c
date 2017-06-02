@@ -29,19 +29,42 @@ int main(int argc, char **argv)
 
     cargs_add_author("Cade Brown", "brownce@ornl.gov");
 
+    cargs_add_arg("-a", "--about", 1, CARGS_ARG_TYPE_STR, "about string");
+    cargs_add_default("-a", "testing program");
 
-    cargs_add_arg("-s", "--sum", 10, CARGS_ARG_TYPE_INT, "to sum");
-    cargs_add_arg("", "", CARGS_NUM_ANY, CARGS_ARG_TYPE_INT, "to prod");
+    cargs_add_arg("-p", "--product", CARGS_NUM_ANY, CARGS_ARG_TYPE_INT, "to prod");
+
+    cargs_add_arg(CARGS_NOSPEC, "", CARGS_NUM_ANY, CARGS_ARG_TYPE_INT, "to sum");
 
 
     cargs_parse();
 
-    if (cargs_get_flag("--sum")) {
-        int a = strtol(cargs_get_arg_str_idx("-s", 0), NULL, 10);
-        int b = strtol(cargs_get_arg_str_idx("-s", 1), NULL, 10);
-        int c = strtol(cargs_get_arg_str_idx("-s", 2), NULL, 10);
-        printf("sum(%d,%d,%d)=%d\n", a, b, c, a+b+c);
+    if (cargs_get_flag("")) {
+        size_t i;
+        int sum = 0, tt;
+        printf("sum(");
+        for (i = 0; i < cargs_get_len(""); ++i) {
+            tt = atoi(cargs_get_idx("", i));
+            sum += tt;
+            printf("%d,", tt);
+        }
+        printf(")=%d\n", sum);
     }
+    
+    if (cargs_get_flag("-p")) {
+        size_t i;
+        int prod = 1, tt;
+        printf("prod(");
+        for (i = 0; i < cargs_get_len("-p"); ++i) {
+            tt = atoi(cargs_get_idx("-p", i));
+            prod *= tt;
+            printf("%d,", tt);
+        }
+        printf(")=%d\n", prod);
+    }
+    
+
+    printf("%s\n", cargs_get("-a"));
 
     return 0;
 
