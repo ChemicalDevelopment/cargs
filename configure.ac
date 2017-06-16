@@ -56,3 +56,5 @@ AC_FUNC_REALLOC
 # todo, add tests
 AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 AC_OUTPUT
+
+
