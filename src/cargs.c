@@ -50,6 +50,7 @@ void cargs_init(char *pkg_name, char *version, int argc, char **argv) {
 
     cargs_arr_init(&cargs_meta.authors, 0, sizeof(cargs_author_t));
 
+    cargs_arr_init_str(&cargs_meta.info_str, 0);
 
     cargs_arr_init(&cargs_arg, 0, sizeof(cargs_sarg_t));
 
@@ -90,6 +91,10 @@ void cargs_print_info() {
             printf(" v%s", cargs_meta.version);
         }
         printf("\n");
+    }
+    size_t i;
+    for (i = 0; i < cargs_meta.info_str.len; ++i) {
+        printf("%s\n", cargs_arr_get_str(&cargs_meta.info_str, i));
     }
 }
 
@@ -168,6 +173,9 @@ void cargs_print_help() {
     cargs_print_authors();
 }
 
+void cargs_add_info(char *info_line) {
+    cargs_arr_append_str(&cargs_meta.info_str, info_line);
+}
 
 void cargs_add_author(char *name, char *email) {
     cargs_author_t *curauth = (cargs_author_t *)malloc(sizeof(cargs_author_t));

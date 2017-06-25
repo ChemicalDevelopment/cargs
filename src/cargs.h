@@ -59,6 +59,7 @@ typedef struct cargs_meta_t {
 
     size_t help_str_off;
 
+    cargs_arr_t info_str;
     cargs_arr_t authors;
 
 } cargs_meta_t;
@@ -87,6 +88,7 @@ void cargs_print_help();
 
 void cargs_add_author(char *name, char *email);
 
+void cargs_add_info(char *info_line);
 
 char cargs_get_placeholder_type(unsigned int type);
 

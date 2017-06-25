@@ -20,7 +20,7 @@
 
 
 AC_PREREQ([2.55])
-AC_INIT([cargs], [0.1.0], [group@chemicaldevelopment.us])
+AC_INIT([cargs], [0.2.1], [group@chemicaldevelopment.us])
 AM_INIT_AUTOMAKE([dist-xz dist-zip])
 
 
