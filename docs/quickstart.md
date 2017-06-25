@@ -1,50 +1,7 @@
-# cargs
+# Quick Start
 
-## What is cargs?
+First, [install](./#/installing) cargs
 
-cargs is a C library for argument parsing, as a more robust alternative to getopt and other antiquated frameworks.
-
-# Install
-
-Most people on this page just want to install cargs.
-
-Here's how:
-
-For debian/ubuntu based systems, download and install [cargs_0.2.1_amd64.deb](https://github.com/ChemicalDevelopment/cargs/releases/download/0.2.1/cargs_0.2.1_amd64.deb)
-
-For fedora based systems, download and install [cargs_0.2.1_x86_64.rpm](https://github.com/ChemicalDevelopment/cargs/releases/download/0.2.1/cargs_0.2.1_x86_64.rpm)
-
-macOS: binaries coming soon
-
-
-If your OS/package manager isn't up there, do this:
-
-Download and unzip: [cargs-0.2.1.zip](https://github.com/ChemicalDevelopment/cargs/releases/download/0.2.1/cargs-0.2.1.zip)
-
-Now, open a terminal and run:
-
-`./configure && make && sudo make install`
-
-
-# Building
-
-## Release
-
-Download the source, and run `./configure && make && make check && make install`
-
-## Source
-
-You need autotools, and possibly [libcheck](https://libcheck.github.io/check/web/install.html)
-
-Now, run `autoreconf -i && ./configure && make`
-
-
-## Tutorial
-
-
-For a lot of examples, see the `tests/` folder for test cases.
-
-# Hello World example
 
 ``` c
 // greet.c
@@ -120,5 +77,4 @@ You can change the greeting, like `./greet Cade -g=Hey` or `./greet Cade -g Hey`
 Hey, Cade!
 How are you?
 ```
-
 
