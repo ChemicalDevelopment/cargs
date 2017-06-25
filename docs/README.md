@@ -1,14 +1,14 @@
-# FractalRender 0.1.0
+# cargs 0.2.1
 
-## What is FractalRender
+## What is cargs
 
-FractalRender is a program that creates fractal images, animations, and other utilities. It supports GPU acceleration, and MPI for multithreaded animation.
+cargs is a commandline parsing library for C, to replace the more antiquated getopt and similar methods.
 
 ### Who is it for?
 
-This is not the easiest fractal program out there, but it is extremely fast. It is for people looking to compute long videos of fractal zooms.
+People who want a small, fast, and portable solution to robust commandline parsing! And it compiled in std=c89.
 
-It can be ran on cluster computers with `mpirun`, or `aprun`, and use GPU acceleration through OpenCL. It can also go to arbitrary zoom levels (past 2^64), using GMP and the `-p` switch.
+Its also required for some chemical development software, so that is another reason you are here
 
 ## How can I use it?
 
